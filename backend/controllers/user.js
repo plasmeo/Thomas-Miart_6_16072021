@@ -3,12 +3,14 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.signup = (req, res, next) => {
+    //crytpage du mdp
     bcrypt.hash(req.body.password, 10)
       .then(hash => {
         const user = new User({
           email: req.body.email,
           password: hash
         });        
+        //enregistrement de l'utilisateur avec erreur s'il éxiste déja
         user.save()
           .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
           .catch(error => res.status(400).json({ error }));
