@@ -3,11 +3,17 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.signup = (req, res, next) => {
+
+    //masquage de l'email
+    let data = req.body.email;
+    let buff = new Buffer.from(data);
+    let userEmail = buff.toString('base64');
+
     //crytpage du mdp
     bcrypt.hash(req.body.password, 10)
       .then(hash => {
         const user = new User({
-          email: req.body.email,
+          email: userEmail,
           password: hash
         });        
         //enregistrement de l'utilisateur avec erreur s'il éxiste déja
@@ -19,7 +25,12 @@ exports.signup = (req, res, next) => {
   };
 
   exports.login = (req, res, next) => {
-    User.findOne({email: req.body.email})
+
+    let data = req.body.email;
+    let buff = new Buffer.from(data);
+    let userEmail = buff.toString('base64');
+//{email: req.body.email}
+    User.findOne({email: userEmail})
     .then(user => {
         if (!user){
             return res.status(401).json({error: 'Utilisateur non trouvé'});
