@@ -9,20 +9,41 @@ exports.signup = (req, res, next) => {
     let buff = new Buffer.from(data);
     let userEmail = buff.toString('base64');
 
-    //crytpage du mdp
-    bcrypt.hash(req.body.password, 10)
-      .then(hash => {
-        const user = new User({
-          email: userEmail,
-          password: hash
-        });        
-        //enregistrement de l'utilisateur avec erreur s'il éxiste déja
-        user.save()
-          .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
-          .catch(error => res.status(400).json({ error }));
-      })
-      .catch(error => res.status(500).json({ error }));
-  };
+
+    //vérification de la force du password 
+    let strongRegex = new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{8,})");
+    let  mediumRegex = new RegExp("^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{6,})");
+
+    let isPasswordOk = false;
+
+    if (strongRegex.test(req.body.password)){
+        console.log("Password fort");
+        isPasswordOk = true;
+    }else if (mediumRegex.test(req.body.password)){
+        console.log("Password Moyen")
+        isPasswordOk = true
+    }
+    
+    if (isPasswordOk){
+        //crytpage du mdp
+        bcrypt.hash(req.body.password, 10)
+        .then(hash => {
+            const user = new User({
+            email: userEmail,
+            password: hash
+            });        
+            //enregistrement de l'utilisateur avec erreur s'il éxiste déja
+            user.save()
+            .then(() => res.status(201).json({ message: 'Utilisateur créé !' }))
+            .catch(error => res.status(400).json({ error }));
+        })
+        .catch(error => res.status(500).json({ error }));
+    } else{        
+        res.status(400).json({message: 'Mot de passe trop faible' });
+    };
+    
+    }
+
 
   exports.login = (req, res, next) => {
 
